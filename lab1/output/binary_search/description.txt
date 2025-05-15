@@ -1,0 +1,15 @@
+-----Description-----
+The task is to implement the binary search algorithm in Lean 4. This algorithm efficiently searches for a specific target value within a sorted array of integers. The algorithm repeatedly divides the search interval in half. If the middle element matches the target, the index of the middle element is returned. If the target is less than the middle element, the search continues in the left half of the array. If the target is greater than the middle element, the search continues in the right half of the array. This process continues until the target is found or the search interval is empty, in which case -1 is returned. The key idea is that the input array *must* be sorted in ascending order for the binary search to function correctly. Special consideration needs to be given to handling empty arrays. The implementation should avoid out-of-bounds accesses.
+
+-----Input-----
+The function should accept two input parameters:
+
+1.  `array`: An array of integers, represented as a `Array Int`.  This array *must* be sorted in ascending order for the algorithm to function correctly. There are no constraints on the size of the array (it can be empty).
+
+2.  `target`: An integer, represented as an `Int`. This is the value that the algorithm will attempt to find within the `array`.
+
+-----Output-----
+The function should return a single integer:
+
+*   If the `target` value is found within the `array`, the function should return the index (a `Nat` value, but coercible to `Int`) of the first occurrence of the `target` in the `array`.
+*   If the `target` value is *not* found within the `array`, the function should return -1. The return type should be `Int` to allow for the -1 return value.
