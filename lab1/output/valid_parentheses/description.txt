@@ -1,0 +1,17 @@
+-----Description-----
+The task is to implement a function in Lean 4 that determines whether a given string of parentheses is valid according to the following rules:
+
+1.  Each opening bracket must be closed by the same type of bracket.
+2.  Opening brackets must be closed in the correct order.
+3.  Every closing bracket must have a corresponding opening bracket of the same type.
+
+-----Input-----
+The function will take one input parameter:
+
+*   `s : String`:  A string consisting only of the characters '(', ')', '{', '}', '[' and ']'. The length of `s` will be between 0 and 10^4 inclusive.
+
+-----Output-----
+The function should return a `Bool` value:
+
+*   `true`: If the input string `s` is a valid string of parentheses according to the rules described above.
+*   `false`: If the input string `s` is not a valid string of parentheses.

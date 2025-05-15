@@ -1,0 +1,12 @@
+-----Description-----
+The task is to implement a function in Lean 4 that calculates the length of the longest strictly increasing subsequence (LIS) within a given integer array. 
+A subsequence is derived from the array by deleting zero or more elements without altering the order of the remaining elements. 
+The implementation needs to handle arrays with sizes between 1 and 2500 (inclusive), and integer values within the range of -10^4 to 10^4 (inclusive).
+
+-----Input-----
+The function takes one input parameter:
+
+*   `nums : Array Int`: An array of integers. The array's length will be between 1 and 2500 (inclusive), and each integer value will be between -10000 and 10000 (inclusive).
+
+-----Output-----
+The function should return a single integer representing the length of the longest strictly increasing subsequence found in the input array `nums`. This value will always be a positive integer.

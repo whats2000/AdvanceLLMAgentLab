@@ -268,8 +268,8 @@ def generate_implementation(problem_text: str, description: str, signature: Func
     
     Format:
     {{
-        "code": "your implementation code here",
-        "spec": "your specification here"
+        "code": "your implementation code here, not including the function signature",
+        "spec": "your specification here, not including the function signature"
     }}
     """
     
