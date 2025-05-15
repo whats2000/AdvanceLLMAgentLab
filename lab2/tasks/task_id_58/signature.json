@@ -1,0 +1,14 @@
+{
+    "name": "hasOppositeSign",
+    "parameters": [
+        {
+            "param_name": "a",
+            "param_type": "Int"
+        },
+        {
+            "param_name": "b",
+            "param_type": "Int"
+        }
+    ],
+    "return_type": "Bool"
+}

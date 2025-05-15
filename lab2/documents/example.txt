@@ -1,0 +1,2 @@
+Reinforcement learning can be used to solve tasks such as decision making and knowledge discovery. This is due to the exploration exploitation paradigm. <EOC>
+Deep neural networks often use transformers. In today's world, has there been a lot of data being fed into these giant foundation models, which compress info about the world.

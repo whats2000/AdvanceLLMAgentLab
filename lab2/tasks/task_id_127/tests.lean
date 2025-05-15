@@ -1,0 +1,7 @@
+#guard multiply (3) (4) = (12)
+#guard multiply (3) (-4) = (-12)
+#guard multiply (-3) (4) = (-12)
+#guard multiply (-3) (-4) = (12)
+#guard multiply (0) (5) = (0)
+#guard multiply (5) (0) = (0)
+#guard multiply (0) (0) = (0)

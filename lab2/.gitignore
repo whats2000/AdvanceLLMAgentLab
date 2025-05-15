@@ -1,0 +1,9 @@
+temp_project/
+.lake/
+submission.zip
+lean_playground/*
+!lean_playground/.gitkeep
+
+__pycache__/
+.venv/
+.tasks_copy/

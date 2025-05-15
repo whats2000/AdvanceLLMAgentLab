@@ -1,0 +1,10 @@
+{
+    "name": "cubeSurfaceArea",
+    "parameters": [
+        {
+            "param_name": "size",
+            "param_type": "Int"
+        }
+    ],
+    "return_type": "Int"
+}

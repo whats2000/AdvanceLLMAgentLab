@@ -1,0 +1,10 @@
+{
+    "name": "cubeElements",
+    "parameters": [
+        {
+            "param_name": "a",
+            "param_type": "Array Int"
+        }
+    ],
+    "return_type": "Array Int"
+}

@@ -1,0 +1,14 @@
+{
+    "name": "isGreater",
+    "parameters": [
+        {
+            "param_name": "n",
+            "param_type": "Int"
+        },
+        {
+            "param_name": "a",
+            "param_type": "Array Int"
+        }
+    ],
+    "return_type": "Bool"
+}

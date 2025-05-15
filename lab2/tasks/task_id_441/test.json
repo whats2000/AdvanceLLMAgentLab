@@ -1,0 +1,37 @@
+[
+    {
+        "input": {
+            "size": 3
+        },
+        "expected": 54,
+        "unexpected": []
+    },
+    {
+        "input": {
+            "size": 1
+        },
+        "expected": 6,
+        "unexpected": []
+    },
+    {
+        "input": {
+            "size": 10
+        },
+        "expected": 600,
+        "unexpected": []
+    },
+    {
+        "input": {
+            "size": 5
+        },
+        "expected": 150,
+        "unexpected": []
+    },
+    {
+        "input": {
+            "size": 2
+        },
+        "expected": 24,
+        "unexpected": []
+    }
+]

@@ -1,0 +1,37 @@
+[
+    {
+        "input": {
+            "a": "#[1, 2, 3, 4]"
+        },
+        "expected": "#[1, 8, 27, 64]",
+        "unexpected": []
+    },
+    {
+        "input": {
+            "a": "#[0, -1, -2, 3]"
+        },
+        "expected": "#[0, -1, -8, 27]",
+        "unexpected": []
+    },
+    {
+        "input": {
+            "a": "#[]"
+        },
+        "expected": "#[]",
+        "unexpected": []
+    },
+    {
+        "input": {
+            "a": "#[5]"
+        },
+        "expected": "#[125]",
+        "unexpected": []
+    },
+    {
+        "input": {
+            "a": "#[-3, -3]"
+        },
+        "expected": "#[-27, -27]",
+        "unexpected": []
+    }
+]

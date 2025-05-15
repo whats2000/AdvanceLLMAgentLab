@@ -1,0 +1,5 @@
+#guard cubeSurfaceArea (3) = (54)
+#guard cubeSurfaceArea (1) = (6)
+#guard cubeSurfaceArea (10) = (600)
+#guard cubeSurfaceArea (5) = (150)
+#guard cubeSurfaceArea (2) = (24)

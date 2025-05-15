@@ -1,0 +1,9 @@
+-----Description----- 
+This task requires writing a Lean 4 function that takes a natural number as input and returns the same natural number as output.
+
+-----Input-----
+The input consists of one natural number:
+x: An natural number.
+
+-----Output-----
+The output is a natural number which the value equals to x.

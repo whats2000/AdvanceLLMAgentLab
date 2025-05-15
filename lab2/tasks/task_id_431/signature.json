@@ -1,0 +1,14 @@
+{
+    "name": "hasCommonElement",
+    "parameters": [
+        {
+            "param_name": "a",
+            "param_type": "Array Int"
+        },
+        {
+            "param_name": "b",
+            "param_type": "Array Int"
+        }
+    ],
+    "return_type": "Bool"
+}
