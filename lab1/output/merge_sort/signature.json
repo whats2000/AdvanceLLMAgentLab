@@ -1,0 +1,10 @@
+{
+  "name": "mergeSort",
+  "parameters": [
+    {
+      "param_name": "array",
+      "param_type": "List Int"
+    }
+  ],
+  "return_type": "List Int"
+}

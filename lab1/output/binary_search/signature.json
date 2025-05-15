@@ -3,7 +3,7 @@
   "parameters": [
     {
       "param_name": "array",
-      "param_type": "Array Int"
+      "param_type": "List Int"
     },
     {
       "param_name": "target",

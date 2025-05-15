@@ -1,0 +1,18 @@
+-----Description-----
+The task is to implement the Merge Sort algorithm in Lean 4 to sort an array (represented as a `List Int`) of integers in ascending order. The implementation should adhere to the divide-and-conquer paradigm characteristic of Merge Sort:
+
+1.  **Divide:** If the input list has more than one element, split it into two sublists of roughly equal size.
+2.  **Conquer:** Recursively sort the two sublists using Merge Sort. The base case for the recursion is when the sublist has zero or one element, in which case it's already sorted.
+3.  **Combine:** Merge the two sorted sublists into a single sorted list. The merging process involves comparing the first elements of each sublist and repeatedly appending the smaller one to the result list until one of the sublists is empty. Then, append any remaining elements from the other sublist to the result.
+
+The function should be purely functional, meaning it should not modify the input list in place but rather return a new sorted list. The implementation must be total, ensuring that it terminates for all valid inputs.  Lean's type system and termination checker should be leveraged to ensure correctness.
+
+-----Input-----
+The function will take one input parameter:
+
+*   `array` : A `List Int` representing the array of integers to be sorted.
+
+-----Output-----
+The function should return:
+
+*   A `List Int` containing the same integers as the input `array`, but sorted in ascending order.

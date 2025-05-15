@@ -181,21 +181,23 @@ def generate_tests(problem_text: str, description: str, signature: FunctionSigna
         {{
             "input": {{ 
                 // Input parameters as key-value pairs
+                // For array inputs, use JSON arrays directly
             }},
-            "expected": // Expected output value,
+            "expected": // Expected output value (for array outputs, use a JSON array directly),
             "unexpected": [
-                // Values that should NOT be returned
+                // Values that should NOT be returned (must be a JSON array)
+                // For array outputs, include examples of incorrect arrays
             ]
         }},
         // More test cases...
     ]
     
-    Make sure to:
-    1. Include at least 5 test cases
-    2. Cover typical scenarios and edge cases
-    3. Include at least one 'unexpected' value for each test
-    4. Format as valid JSON with no additional text
-    5. Use appropriate Lean 4 values based on the defined types
+    IMPORTANT:
+    - The "unexpected" field MUST be a JSON array, even if there's only one element
+    - For array inputs or outputs, use direct JSON arrays (not strings representing arrays)
+    - Include at least 5 test cases
+    - Cover typical scenarios and edge cases
+    - Format as valid JSON with no additional text
     """
     
     try:
@@ -211,8 +213,18 @@ def generate_tests(problem_text: str, description: str, signature: FunctionSigna
         if json_match:
             content = json_match.group(1)
         
+        # Parse the JSON
         test_cases = json.loads(content)
-        return [TestCase(**tc) for tc in test_cases]
+        
+        # Process each test case to ensure proper formatting
+        processed_cases = []
+        for tc in test_cases:
+            # Ensure unexpected is a list
+            if not isinstance(tc.get("unexpected", []), list):
+                tc["unexpected"] = [tc["unexpected"]]
+            processed_cases.append(TestCase(**tc))
+        
+        return processed_cases
     except Exception as e:
         logger.error(f"Error generating tests: {str(e)}")
         raise
@@ -358,16 +370,17 @@ The output is a {datapoint.signature.return_type}
     }
     with open(output_dir / "signature.json", "w", encoding="utf-8") as f:
         json.dump(signature_json, f, indent=2)
-    
-    # Save test.json
+      # Save test.json
     # Convert Pydantic models to dictionaries
     test_cases_json = []
     for tc in datapoint.test_cases:
-        test_cases_json.append({
+        # Ensure all fields are properly formatted
+        test_case_dict = {
             "input": tc.input,
             "expected": tc.expected,
-            "unexpected": tc.unexpected
-        })
+            "unexpected": tc.unexpected if isinstance(tc.unexpected, list) else [tc.unexpected]
+        }
+        test_cases_json.append(test_case_dict)
     
     with open(output_dir / "test.json", "w", encoding="utf-8") as f:
         json.dump(test_cases_json, f, indent=2)
