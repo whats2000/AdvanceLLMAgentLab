@@ -2,3 +2,4 @@
 /lab2/.vscode
 *.pkl
 *.npy
+/lab2/src/lean_playground
