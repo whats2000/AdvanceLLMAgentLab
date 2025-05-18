@@ -119,12 +119,14 @@ def main_workflow(problem_description: str, task_lean_code: str = "") -> LeanCod
             f"The specification is:\n{spec}\n\n"
             f"Here's the plan we'll follow:\n{plan}\n\n"
             f"Here are some relevant examples that might help:\n{relevant_examples}\n\n"
-            f"Please provide ONLY:\n"
-            f"1. The implementation code (without the def {function_name} part)\n"
-            f"2. The proof (after the unfold line)"
+            f"Please provide ONLY the raw implementation code and proof with no labels, headers, or annotations:\n"
+            f"1. The implementation code (without the def {function_name} part) - just the core implementation\n"
+            f"2. The proof (after the unfold line) - just the proof tactics\n\n"
+            f"IMPORTANT: Do NOT include any text like 'Corrected Code:', 'Implementation:', '---', or line dividers. "
+            f"Do NOT include any nested function definitions. The code will be directly inserted into the Lean file."
          }
     ]
-    
+
     # Get initial implementation and proof from generation agent
     generated_solution = generation_agent.get_response(generation_prompt)
 
@@ -148,14 +150,28 @@ def main_workflow(problem_description: str, task_lean_code: str = "") -> LeanCod
             # As a last resort, assume the first half is code and second half is proof
             middle_point = len(generated_solution) // 2
             generated_function_implementation = generated_solution[:middle_point].strip()
-            generated_proof = generated_solution[middle_point:].strip()
+            generated_proof = generated_solution[
+                              middle_point:].strip()  # Clean up the code and proof - remove labels, headers, and markdown
+        generated_function_implementation = re.sub(r'```.*?```', '', generated_function_implementation, flags=re.DOTALL)
+        generated_proof = re.sub(r'```.*?```', '', generated_proof, flags=re.DOTALL)
 
-    # Clean up the code and proof - remove markdown code blocks, comments, etc.
-    generated_function_implementation = re.sub(r'```.*?```', '', generated_function_implementation, flags=re.DOTALL)
-    generated_proof = re.sub(r'```.*?```', '', generated_proof, flags=re.DOTALL)
+        # Remove any additional formatting patterns that might appear
+        for pattern in [r'(?i)implementation\s*:', r'(?i)code\s*:', r'(?i)corrected code\s*:', r'-{3,}', r'={3,}']:
+            generated_function_implementation = re.sub(pattern, '', generated_function_implementation, flags=re.DOTALL)
+            generated_proof = re.sub(pattern, '', generated_proof, flags=re.DOTALL)
 
-    # Remove any 'unfold' statements from the proof as they are already in the template
-    generated_proof = re.sub(r'unfold.*?\n', '', generated_proof)
+        # Remove any proof headers that might appear
+        for pattern in [r'(?i)proof\s*:', r'(?i)theorem\s*:']:
+            generated_proof = re.sub(pattern, '', generated_proof, flags=re.DOTALL)
+
+        # Remove duplicate function definitions if they appear
+        if f"def {function_name}" in generated_function_implementation:
+            generated_function_implementation = re.sub(
+                rf'def\s+{function_name}\s*' + re.escape(function_signature) + r'\s*:=\s*', '',
+                generated_function_implementation, flags=re.DOTALL)
+
+        # Remove any 'unfold' statements from the proof
+        generated_proof = re.sub(r'unfold.*?\n', '', generated_proof)
 
     # -------------------- VERIFICATION PHASE --------------------
     print("Starting verification and refinement...")
@@ -185,9 +201,10 @@ def main_workflow(problem_description: str, task_lean_code: str = "") -> LeanCod
 
         # Build verification prompt for refinement
         verification_prompt = [
-            {"role": "system", "content":
-                "You are an expert in Lean 4 theorem proving and programming. "
-                "Your task is to fix errors in a Lean 4 implementation and proof."
+            {"role": "system",
+             "content": "You are an expert in Lean 4 theorem proving and programming. "
+                        "Your task is to fix errors in a Lean 4 implementation and proof. "
+                        "Provide only the raw code and proof without any headers, labels or formatting."
              },
             {"role": "user", "content":
                 f"I have a Lean 4 implementation and proof with errors. Here's the context:\n\n"
@@ -198,7 +215,9 @@ def main_workflow(problem_description: str, task_lean_code: str = "") -> LeanCod
                 f"Current proof:\n```lean\n{generated_proof}\n```\n\n"
                 f"Error message:\n{error_message}\n\n"
                 f"Please fix the implementation and/or proof to resolve these errors. "
-                f"Return the corrected code and proof only, separated clearly."
+                f"Return only the corrected code and proof without any extra text, labels, or formatting. "
+                f"Do NOT include text like 'Corrected Code:', or dividers like '---'. "
+                f"The output will be directly inserted into the Lean file."
              }
         ]
 
@@ -217,20 +236,42 @@ def main_workflow(problem_description: str, task_lean_code: str = "") -> LeanCod
             generated_proof = code_parts[1].strip()
         else:
             # If we can't clearly separate, use the larger agent for a clearer separation
-            clarification_prompt = [
-                {"role": "system",
-                 "content": "You are an expert in Lean 4. Separate this solution into code and proof parts."},
-                {"role": "user",
-                 "content": f"Separate this Lean 4 solution into clear code and proof parts:\n{refinement_solution}"}
-            ]
-            clarification = generation_agent.get_response(clarification_prompt)
+            clarification_prompt = [{"role": "system",
+                                     "content": "You are an expert in Lean 4. Separate this solution into code and proof parts with NO labels, headers, or formatting markers."},
+                                    {"role": "user",
+                                     "content": f"Separate this Lean 4 solution into clear code and proof parts with no extra text:\n{refinement_solution}\n\nIMPORTANT: Do NOT include any text like 'Code:', 'Proof:', 'Corrected Code:', or line dividers like '---'. Just separate the actual code from the actual proof."}
+                                    ]
+            clarification = generation_agent.get_response(
+                clarification_prompt)  # Try to parse the output more intelligently
+            if "implementation" in clarification.lower() and "proof" in clarification.lower():
+                # First check if there are clear headers we can use
+                code_match = re.search(r'(?i)implementation[:\s]+(.*?)(?=proof[:\s]+|$)', clarification, re.DOTALL)
+                proof_match = re.search(r'(?i)proof[:\s]+(.*)', clarification, re.DOTALL)
 
-            code_match = re.search(r'Code:(.*?)Proof:', clarification, re.DOTALL)
-            proof_match = re.search(r'Proof:(.*)', clarification, re.DOTALL)
-
-            if code_match and proof_match:
-                generated_function_implementation = code_match.group(1).strip()
-                generated_proof = proof_match.group(1).strip()
+                if code_match and proof_match:
+                    generated_function_implementation = code_match.group(1).strip()
+                    generated_proof = proof_match.group(1).strip()
+                else:
+                    # Fallback to a simple split
+                    parts = clarification.lower().split("proof", 1)
+                    if len(parts) > 1:
+                        generated_function_implementation = parts[0].strip()
+                        generated_proof = parts[1].strip()
+                    else:
+                        # Last resort - try to find any implementation/proof indicators
+                        for indicator in ["implementation", "def", "function", "code"]:
+                            if indicator in clarification.lower():
+                                parts = clarification.lower().split(indicator, 1)
+                                if len(parts) > 1:
+                                    potential_code = parts[1].strip()
+                                    # Find where the proof might start
+                                    for proof_indicator in ["proof", "theorem", "lemma"]:
+                                        if proof_indicator in potential_code.lower():
+                                            code_end = potential_code.lower().find(proof_indicator)
+                                            if code_end > 0:
+                                                generated_function_implementation = potential_code[:code_end].strip()
+                                                generated_proof = potential_code[code_end:].strip()
+                                                break
 
         # Clean up the code and proof
         generated_function_implementation = re.sub(r'```.*?```', '', generated_function_implementation, flags=re.DOTALL)
@@ -263,18 +304,19 @@ def main_workflow(problem_description: str, task_lean_code: str = "") -> LeanCod
 
         # Simplify the prompt to avoid overwhelming the model
         final_verification_prompt = [
-            {"role": "system", "content":
-                "You are an expert in Lean 4 theorem proving and programming. "
-                "Your task is to rewrite a Lean 4 implementation and proof to fix errors. "
-                "Be minimal, precise, and focus on correctness."
+            {"role": "system",
+             "content": "You are an expert in Lean 4 theorem proving and programming. "
+                        "Your task is to rewrite a Lean 4 implementation and proof to fix errors. "
+                        "Be minimal, precise, and focus on correctness. Provide only raw code and proof with no formatting."
              },
             {"role": "user", "content":
                 f"Problem description: {problem_description[:300]}...\n\n"
                 f"Function signature: def {function_name}{function_signature}\n\n"
                 f"Specification: {spec}\n\n"
                 f"Error message: {execution_result[:300] if len(execution_result) > 300 else execution_result}\n\n"
-                f"Please provide a minimal working implementation and proof. "
-                f"Label them clearly as 'Implementation:' and 'Proof:'"
+                f"Please provide a minimal working implementation and proof without any labels or formatting. "
+                f"Do NOT include text like 'Implementation:', 'Proof:', headers, or dividers. "
+                f"The code will be directly inserted into the Lean file."
              }
         ]
 
@@ -336,19 +378,20 @@ def get_problem_and_code_from_taskpath(task_path: str) -> Tuple[str, str]:
     """
     Reads a directory in the format of task_id_*. It will read the file "task.lean" and also read the file 
     that contains the task description, which is "description.txt".
-    
+
     After reading the files, it will return a tuple of the problem description and the Lean code template.
-    
+
     Args:
         task_path: Path to the task file
     """
     problem_description = ""
     lean_code_template = ""
 
-    with open(os.path.join(task_path, "description.txt"), "r") as f:
+    with open(os.path.join(task_path, "description.txt"), "r", encoding="utf-8") as f:
         problem_description = f.read()
 
-    with open(os.path.join(task_path, "task.lean"), "r") as f:
+    # Read Lean code template
+    with open(os.path.join(task_path, "task.lean"), "r", encoding="utf-8") as f:
         lean_code_template = f.read()
 
     return problem_description, lean_code_template

@@ -29,6 +29,7 @@ def execute_lean_code(code: str) -> str:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
+                encoding="utf-8",
                 check=False,  # Don't raise exception on non-zero return code
                 timeout=60  # Set a 60-second timeout
             )
