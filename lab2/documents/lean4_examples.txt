@@ -1,0 +1,338 @@
+-- Basic Lean 4 Operations and Proofs Examples
+
+-- Example 1: Identity function
+-- This function simply returns the input value
+def identity (x : Nat) : Nat := 
+  x
+
+-- Proof that the identity function returns its input
+theorem identity_returns_input (x : Nat) : identity x = x := by
+  -- Unfold the definition of identity
+  unfold identity
+  -- This simplifies to x = x, which is reflexivity
+  rfl
+
+<EOC>
+
+-- Example 2: Minimum of two numbers
+-- This function returns the minimum of two integers
+def min2 (a : Int) (b : Int) : Int :=
+  if a <= b then a else b
+
+-- Specification for min2
+def min2_spec (a : Int) (b : Int) (result : Int) : Prop :=
+  (result <= a ∧ result <= b) ∧ (result = a ∨ result = b)
+
+-- Proof that min2 satisfies its specification
+theorem min2_spec_satisfied (a : Int) (b : Int) : min2_spec a b (min2 a b) := by
+  unfold min2 min2_spec
+  -- Split into cases based on the if condition
+  by_cases h : a <= b
+  -- Case: a <= b
+  · simp [h]
+    constructor
+    · constructor
+      · exact h
+      · simp
+    · left
+      rfl
+  -- Case: ¬(a <= b)
+  · simp [h]
+    constructor
+    · constructor
+      · have h1 : b < a := by
+          exact lt_of_not_le h
+        exact le_of_lt h1
+      · simp
+    · right
+      rfl
+
+<EOC>
+
+-- Example 3: Minimum of three numbers
+-- This function returns the minimum of three integers
+def min3 (a : Int) (b : Int) (c : Int) : Int :=
+  if a <= b then
+    if a <= c then a else c
+  else
+    if b <= c then b else c
+
+-- Specification for min3
+def min3_spec (a : Int) (b : Int) (c : Int) (result : Int) : Prop :=
+  (result <= a ∧ result <= b ∧ result <= c) ∧ 
+  (result = a ∨ result = b ∨ result = c)
+
+-- Proof that min3 satisfies its specification
+theorem min3_spec_satisfied (a : Int) (b : Int) (c : Int) : 
+  min3_spec a b c (min3 a b c) := by
+  unfold min3 min3_spec
+  -- Split into cases based on the first if condition
+  by_cases h1 : a <= b
+  · -- Case: a <= b
+    simp [h1]
+    -- Split into cases based on the second if condition
+    by_cases h2 : a <= c
+    · -- Case: a <= b and a <= c
+      simp [h2]
+      constructor
+      · constructor
+        · simp
+        · constructor
+          · exact h1
+          · exact h2
+      · left
+        rfl
+    · -- Case: a <= b and ¬(a <= c)
+      simp [h2]
+      constructor
+      · constructor
+        · have h3 : c < a := by
+            exact lt_of_not_le h2
+          exact le_of_lt h3
+        · constructor
+          · have h4 : c < a := by
+              exact lt_of_not_le h2
+            exact le_trans (le_of_lt h4) h1
+          · simp
+      · right; right
+        rfl
+  · -- Case: ¬(a <= b)
+    simp [h1]
+    -- Split into cases based on the third if condition
+    by_cases h2 : b <= c
+    · -- Case: ¬(a <= b) and b <= c
+      simp [h2]
+      constructor
+      · constructor
+        · have h3 : b < a := by
+            exact lt_of_not_le h1
+          exact le_of_lt h3
+        · constructor
+          · simp
+          · exact h2
+      · right; left
+        rfl
+    · -- Case: ¬(a <= b) and ¬(b <= c)
+      simp [h2]
+      constructor
+      · constructor
+        · have h3 : c < b := by
+            exact lt_of_not_le h2
+          have h4 : b < a := by
+            exact lt_of_not_le h1
+          exact le_of_lt (lt_trans h3 h4)
+        · constructor
+          · have h3 : c < b := by
+              exact lt_of_not_le h2
+            exact le_of_lt h3
+          · simp
+      · right; right
+        rfl
+
+<EOC>
+
+-- Example 4: Checking divisibility
+-- This function checks if a number is divisible by another
+def isDivisibleBy (n : Int) (d : Int) : Bool :=
+  n % d = 0
+
+-- Specification for isDivisibleBy
+def isDivisibleBy_spec (n : Int) (d : Int) (result : Bool) : Prop :=
+  n % d = 0 ↔ result
+
+-- Proof that isDivisibleBy satisfies its specification
+theorem isDivisibleBy_spec_satisfied (n : Int) (d : Int) (h : d ≠ 0) : 
+  isDivisibleBy_spec n d (isDivisibleBy n d) := by
+  unfold isDivisibleBy isDivisibleBy_spec
+  -- Direct application of iff_self
+  apply Iff.rfl
+
+<EOC>
+
+-- Example 5: Absolute value function
+-- This function computes the absolute value of an integer
+def absInt (n : Int) : Int :=
+  if n >= 0 then n else -n
+
+-- Specification for absInt
+def absInt_spec (n : Int) (result : Int) : Prop :=
+  result >= 0 ∧ (result = n ∨ result = -n)
+
+-- Proof that absInt satisfies its specification
+theorem absInt_spec_satisfied (n : Int) : absInt_spec n (absInt n) := by
+  unfold absInt absInt_spec
+  -- Split into cases based on whether n is non-negative
+  by_cases h : n >= 0
+  · -- Case: n >= 0
+    simp [h]
+    constructor
+    · exact h
+    · left
+      rfl
+  · -- Case: ¬(n >= 0)
+    simp [h]
+    constructor
+    · have h1 : n < 0 := by
+        exact lt_of_not_ge h
+      exact neg_pos_of_neg h1
+    · right
+      rfl
+
+<EOC>
+
+-- Example 6: GCD calculation using Euclidean algorithm
+-- This function computes the greatest common divisor of two natural numbers
+def gcd (a b : Nat) : Nat :=
+  match b with
+  | 0 => a
+  | _ => gcd b (a % b)
+
+-- Example 7: Factorial function
+-- This function computes the factorial of a natural number
+def factorial (n : Nat) : Nat :=
+  match n with
+  | 0 => 1
+  | n+1 => (n+1) * factorial n
+
+-- Proof that factorial is positive
+theorem factorial_pos (n : Nat) : factorial n > 0 := by
+  induction n with
+  | zero => 
+    unfold factorial
+    simp
+  | succ n ih => 
+    unfold factorial
+    have h1 : (n + 1) > 0 := Nat.succ_pos n
+    exact Nat.mul_pos h1 ih
+
+<EOC>
+
+-- Example 8: Array operation examples
+-- Function to compute the sum of elements in an array
+def sumArray (arr : Array Int) : Int :=
+  if arr.size = 0 then 0 else
+    let rec loop (i : Nat) (acc : Int) : Int :=
+      if i >= arr.size then acc
+      else loop (i + 1) (acc + arr[i])
+    loop 0 0
+
+-- Example 9: Proving properties with induction
+-- Proving sum of first n natural numbers
+def sumFirstN (n : Nat) : Nat :=
+  match n with
+  | 0 => 0
+  | n+1 => (n+1) + sumFirstN n
+
+theorem sum_formula (n : Nat) : sumFirstN n = n * (n + 1) / 2 := by
+  induction n with
+  | zero => 
+    unfold sumFirstN
+    simp
+  | succ n ih => 
+    unfold sumFirstN
+    rw [ih]
+    -- Algebraic manipulation
+    simp
+    ring
+
+<EOC>
+
+-- Common tactics and their usage:
+-- rfl: proves goals of the form x = x by reflexivity
+-- simp: simplifies expressions using built-in simplification rules
+-- constructor: breaks a conjunction goal (∧) into separate subgoals
+-- left/right: chooses the left or right side of a disjunction (∨)
+-- induction: initiates a proof by induction
+-- by_cases: splits the proof into cases based on a condition
+-- exact: provides a direct proof of the goal
+-- apply: applies a theorem or hypothesis to transform the goal
+-- rw [theorem_name]: rewrites using an equality theorem
+-- unfold function_name: expands the definition of a function
+-- have: introduces a new local hypothesis
+-- ring: proves goals involving ring operations (addition, multiplication, etc.)
+
+<EOC>
+
+-- Pattern for handling common Lean proofs:
+
+-- 1. Start by unfolding function definitions with `unfold`
+-- 2. For conditional expressions, use `by_cases` to split into cases
+-- 3. Use `simp` with the condition to simplify if-then-else expressions
+-- 4. For conjunction goals (∧), use `constructor` to split into subgoals
+-- 5. For disjunction goals (∨), use `left` or `right` to choose the side to prove
+-- 6. For equalities, use `rfl` if it's reflexive, or `rw` to rewrite using other equalities
+-- 7. For inductive proofs, use `induction` followed by handling each case
+
+<EOC>
+
+-- Examples of basic data structures and functions:
+-- 1. Pairs
+def swapPair (p : Int × Int) : Int × Int :=
+  (p.2, p.1)
+
+-- 2. Lists
+def listLength (xs : List α) : Nat :=
+  match xs with
+  | [] => 0
+  | _ :: xs => 1 + listLength xs
+
+-- 3. Option type
+def findFirst (p : α → Bool) (xs : List α) : Option α :=
+  match xs with
+  | [] => none
+  | x :: xs => if p x then some x else findFirst p xs
+
+<EOC>
+
+-- More complex proof examples:
+-- Proving that a function to check if a number is prime works correctly
+def isPrime (n : Nat) : Bool :=
+  if n < 2 then false else
+    let rec noFactorUpTo (m : Nat) : Bool :=
+      if m * m > n then true
+      else if n % m = 0 then false
+      else noFactorUpTo (m + 1)
+    noFactorUpTo 2
+
+-- Definition of primality as a proposition
+def Prime (n : Nat) : Prop :=
+  n ≥ 2 ∧ ∀ m, 1 < m → m < n → n % m ≠ 0
+
+-- The proof that isPrime correctly identifies prime numbers would be complex,
+-- involving numerous lemmas about division and modulo operations.
+
+<EOC>
+
+-- Common error patterns and solutions in Lean proofs:
+
+-- Error 1: "tactic 'rfl' failed, equality lhs and rhs are not definitionally equal"
+-- Solution: Use `rw` instead of `rfl`, or unfold definitions first
+
+-- Error 2: "unknown identifier"
+-- Solution: Check for typos or make sure the required files are imported
+
+-- Error 3: "tactic 'simp' failed to simplify"
+-- Solution: Provide specific lemmas to simp via `simp [lemma1, lemma2]`
+
+-- Error 4: "failed to synthesize type class instance"
+-- Solution: Provide the required instance or add a specific type annotation
+
+<EOC>
+
+-- Understanding specification patterns:
+-- 1. Equality specification: result = expected_value
+-- 2. Property specification: result has certain properties
+-- 3. Relation specification: result relates to inputs in specific ways
+-- 4. Implication specification: if input has property X, then result has property Y
+-- 5. Bi-implication (iff) specification: input has property X iff result has property Y
+
+<EOC>
+
+-- Tips for writing efficient proofs:
+-- 1. Modularize complex proofs into lemmas
+-- 2. Use pattern matching when possible rather than if-then-else
+-- 3. Leverage the standard library instead of reimplementing common functionality
+-- 4. Use `simp` with specific lemmas rather than trying to simplify everything at once
+-- 5. Consider induction for recursive functions or properties over natural numbers
+-- 6. For equality proofs, try to use `rw` and `ring` for algebraic manipulations
+-- 7. For complex logical statements, break them down using `constructor`, `left`/`right`
