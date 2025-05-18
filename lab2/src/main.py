@@ -401,7 +401,7 @@ def get_unit_tests_from_taskpath(task_path: str) -> List[str]:
     """
     Reads a directory in the format of task_id_*. It will read the file "tests.lean" and return the unit tests.
     """
-    with open(os.path.join(task_path, "tests.lean"), "r") as f:
+    with open(os.path.join(task_path, "tests.lean"), "r", encoding="utf-8") as f:
         unit_tests = f.read()
 
     return unit_tests
@@ -411,6 +411,6 @@ def get_task_lean_template_from_taskpath(task_path: str) -> str:
     """
     Reads a directory in the format of task_id_*. It will read the file "task.lean" and return the Lean code template.
     """
-    with open(os.path.join(task_path, "task.lean"), "r") as f:
+    with open(os.path.join(task_path, "task.lean"), "r", encoding="utf-8") as f:
         task_lean_template = f.read()
     return task_lean_template
